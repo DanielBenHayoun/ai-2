@@ -1,0 +1,16 @@
+#VSCode related
+.vscode/
+
+# Local History for Visual Studio Code
+.history/
+
+# Virtual Env:
+.venv/
+
+#Cache:
+**/__pycache__/
+.outputs/
+#framework/db/
+
+#Docs:
+*.docx
