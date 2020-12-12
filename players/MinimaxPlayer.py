@@ -109,9 +109,18 @@ class Player(AbstractPlayer):
                 return False
         return True
 
+    def set_player_move(self, pos):
+        """ update board 
+            input:
+                -pos: new player position
+        """
+        self.board[self.player_location] = -1
+        self.board[pos] = 1
+        self.player_location = pos
+
     ########## helper functions for MiniMax algorithm ##########
 
-    def succ(self, current_board,player_type: str) -> list:
+    def succ(self, current_board, player_type: str) -> list:
         """Get succesors list
         input:
             - player_type:  str, one of the values ['player','rival']
@@ -179,7 +188,7 @@ class Player(AbstractPlayer):
         # This value presents the total number of reachable squares from the current player location in the game's board
         return len_reachable_squares - 1
 
-    def is_goal_state(self,board_state, player_type: str):
+    def is_goal_state(self, board_state, player_type: str):
         """check whether board_state is a goal state
         input:
             - player_type:  str, one of the values ['player','rival']
