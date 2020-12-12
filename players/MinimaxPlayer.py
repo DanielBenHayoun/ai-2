@@ -65,8 +65,9 @@ class Player(AbstractPlayer):
             - pos: tuple, the new position of the rival.
         No output is expected
         """
-        # TODO: erase the following line and implement this function.
-        raise NotImplementedError
+        self.board[self.rival_location] = -1
+        self.rival_location = pos
+        self.board[pos] = 2
 
     def update_fruits(self, fruits_on_board_dict):
         """Update your info on the current fruits on board (if needed).
