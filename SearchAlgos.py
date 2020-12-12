@@ -1,7 +1,8 @@
 """Search Algos: MiniMax, AlphaBeta
 """
+from players.MinimaxPlayer import Player
 from utils import ALPHA_VALUE_INIT, BETA_VALUE_INIT
-#TODO: you can import more modules, if needed
+# TODO: you can import more modules, if needed
 
 
 class SearchAlgos:
@@ -31,9 +32,7 @@ class MiniMax(SearchAlgos):
         :param maximizing_player: Whether this is a max node (True) or a min node (False).
         :return: A tuple: (The min max algorithm value, The direction in case of max node or None in min mode)
         """
-        #TODO: erase the following line and implement this function.
-        raise NotImplementedError
-
+  
 
 class AlphaBeta(SearchAlgos):
 
@@ -46,5 +45,5 @@ class AlphaBeta(SearchAlgos):
         :param: beta: beta value
         :return: A tuple: (The min max algorithm value, The direction in case of max node or None in min mode)
         """
-        #TODO: erase the following line and implement this function.
+        # TODO: erase the following line and implement this function.
         raise NotImplementedError
