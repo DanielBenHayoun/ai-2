@@ -57,7 +57,7 @@ class Player(AbstractPlayer):
         # check time limit to send for alg.
         # utility=?
 
-        # minimax=MiniMax()
+        minimax = MiniMax(self.utility, self.succ,)
 
     def set_rival_move(self, pos):
         """Update your info, given the new position of the rival.
@@ -77,6 +77,7 @@ class Player(AbstractPlayer):
                                     'value' is the value of this fruit.
         No output is expected.
         """
+        # TODO : make sure no need to clean the board first
         for pos, value in fruits_on_board_dict.items():
             i, j = pos
             self.fruits[i][j] = value
@@ -93,7 +94,7 @@ class Player(AbstractPlayer):
             return self.player_location
         return self.rival_location
 
-    def is_stuck(self, player_type: str):
+    def is_stuck(self, player_type: str)->bool:
         """
         input:
             - player_type: str, one of the values ['player','rival']
@@ -114,6 +115,7 @@ class Player(AbstractPlayer):
             input:
                 -pos: new player position
         """
+        # TODO: updated certain player  ['player','rival']
         self.board[self.player_location] = -1
         self.board[pos] = 1
         self.player_location = pos
@@ -211,3 +213,25 @@ class Player(AbstractPlayer):
                 return 10000000, 1, True
             elif is_rival_stuck and is_player_stuck:
                 return 0, 1, True
+
+    def utility(self):
+        """
+        utility and heuristic function
+        """
+        pass
+
+    # def set_recursive_location(self, player_type:str, old_pos):
+    #     """
+    #     moving a player back from the backtracking process and  set self.<player/rival> to old location on board
+    #     input:
+    #         - player_type:  str, one of the values ['player','rival']
+    #         - old_pos:  location to move back
+    #     """
+    #     if player == 'player':
+    #         self.board[self.player_location] = 0
+    #         self.loc = old_loc
+    #     else:
+    #         self.board[self.rival_loc] = 0
+    #         self.rival_loc = old_loc
+
+    #     self.board[old_loc] = player
