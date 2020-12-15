@@ -18,6 +18,7 @@ class SearchAlgos:
         self.utility = utility
         self.succ = succ
         self.perform_move = perform_move
+        self.goal = goal
 
     def search(self, state, depth, maximizing_player):
         pass
@@ -32,8 +33,36 @@ class MiniMax(SearchAlgos):
         :param maximizing_player: Whether this is a max node (True) or a min node (False).
         :return: A tuple: (The min max algorithm value, The direction in case of max node or None in min mode)
         """
-        # TODO: erase the following line and implement this function.
-        raise NotImplementedError
+        # TODO        
+        # Check base cases
+        if self.goal(state) or depth == 0:
+            return self.utility(state,maximizing_player)
+        
+        # Else, Search:
+
+        #children = self.succ()
+
+        # Max Node:
+        if maximizing_player:
+            cur_max = float('-inf')
+            #direction = 
+
+            for child_state in self.succ():
+                # child_state: (board,direction)
+                minmax_value, direction = self.search(child_state[0],depth-1, not maximizing_player)
+                cur_max = max(minmax_value, cur_max)
+
+            return cur_max, direction
+        # Min Node:
+        else:  
+            cur_min = float('inf')
+            
+            for child_state in self.succ():
+                minmax_value, direction = self.search(child_state[0],depth-1, not maximizing_player)
+                cur_min = min(minmax_value, cur_min)
+
+            return cur_min, None
+
 
 
 class AlphaBeta(SearchAlgos):

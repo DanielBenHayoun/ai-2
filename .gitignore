@@ -1,6 +1,7 @@
 
-#VSCode related
+#IDE related
 .vscode/
+.idea/
 
 # Local History for Visual Studio Code
 .history/
