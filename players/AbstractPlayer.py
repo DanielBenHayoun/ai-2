@@ -17,6 +17,7 @@ class AbstractPlayer:
         self.game_time = game_time
         self.penalty_score = penalty_score
         self.directions = utils.get_directions() #[(1, 0), (0, 1), (-1, 0), (0, -1)]
+        
     
 
     def set_game_params(self, board):
