@@ -13,17 +13,23 @@ from typing import Callable
 ## A State class
 class State:
     
-    def __init__(self):
-        self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+    def __init__(self,directions,board,locations,fruits_dict,player_type,players_score,penalty_score,fruits_ttl):
+        self.directions = deepcopy(directions)
         self.X=0
         self.Y=1
-        self.player_type = 1 # Player, 2 Rival
-        self.locations = [None, None, None]
+        self.player_type = player_type
+        self.board = deepcopy(board)
+        self.locations = locations
+        self.fruits_dict = deepcopy(fruits_dict)
+        self.fruits_ttl = fruits_ttl
         self.dir = dir
-        self.fruits_dict = {}
+        self.penalty_score = penalty_score
         self.players_score=[None, None, None]
-        self.board = []
+        self.players_score[1] = players_score[0]
+        self.players_score[2] = players_score[1]
+
         self.sp_points = 0 # Simple Player points
+
         
 
     def set_location(self,player_type,pos):
@@ -31,18 +37,6 @@ class State:
     
     def get_location(self):
         return self.locations[self.player_type]
-
-    def update_state(self,board,locations,fruits_dict,player_type,players_score,penalty_score,fruits_ttl):
-        self.board = deepcopy(board)
-        self.locations = locations
-        self.fruits_dict = fruits_dict
-        self.player_type = player_type
-        self.players_score[1] = players_score[0]
-        self.players_score[2] = players_score[1]
-        self.penalty_score = penalty_score
-        self.fruits_ttl = fruits_ttl
-        self.player_heuristic_board = deepcopy(board)
-        self.rival_heuristic_board = deepcopy(board)
 
     def set_player(self,player_type):
         self.player_type = 1 if player_type else 2 
@@ -59,13 +53,6 @@ class State:
     def add_direction(self, player_type,d):
         return (self.locations[player_type][0] + d[0],self.locations[player_type][1] + d[1])
     
-    def is_stuck(self,player_type):
-        for d in self.directions:
-            i,j = self.add_direction(player_type,d)
-            if self.legal_move(i,j):
-                return False
-        return True
-
     def available_steps(self, location):
             available_steps = 0
             for direction in self.directions:
@@ -250,5 +237,5 @@ class AlphaBeta(SearchAlgos):
                     chosen_state = curr_state
                 beta = min(cur_min, beta)
                 if cur_min <= alpha: # Chop chop
-                    return -float('inf'), direction, False, chosen_state
+                    return float('-inf'), direction, False, chosen_state
             return cur_min, None,curr_reach_the_end,chosen_state
