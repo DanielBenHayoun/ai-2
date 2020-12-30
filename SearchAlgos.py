@@ -66,15 +66,6 @@ class State:
     def half_game(self):
         return self.turns >= (self.max_turns // 2)
 
-    def print_board_to_terminal(self,board=None):
-        if not board:
-            board = self.board
-        board_to_print = np.flipud(board)
-        print('_' * len(board_to_print[0]) * 4)
-        for row in board_to_print:
-            row = [str(int(x)) if x != -1 else 'X' for x in row]
-            print(' | '.join(row))
-            print('_' * len(row) * 4)
 ############################################
 
 class SearchAlgos:

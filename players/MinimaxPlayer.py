@@ -50,9 +50,6 @@ class Player(AbstractPlayer):
         self.locations[PLAYER] = tuple(ax[0] for ax in player_pos)
         self.locations[RIVAL] = tuple(ax[0] for ax in rival_pos)
         self.turns = 0
-        # if len(fruits_poses) > 0 and len(fruits_poses[0]) > 0:
-        #     self.fruits_poses = tuple(ax[i] for ax in fruits_poses for i in range(len(fruits_poses[0])))
-        # num_free_places = len(np.where(self.map == 0)[0])
         
     def make_move(self, time_limit, players_score):
         """Make move with this Player.
@@ -75,7 +72,7 @@ class Player(AbstractPlayer):
         else:
             TIME_ESTIMATION = 0.85
 
-        while not reach_the_end: # and d < len(state.board)*len(state.board[0]):
+        while not reach_the_end:
             
             iter_time_limit = TIME_ESTIMATION * ( time_limit - (time.time() - start_time) )
             state = State(get_directions(),self.board,self.locations,self.fruits_on_board_dict,PLAYER,players_score,self.penalty_score,self.fruits_ttl,self.turns)
@@ -124,12 +121,10 @@ class Player(AbstractPlayer):
             return
         self.fruits_ttl -= 1
         # Remove all fruits if their TTL expired
-        if self.fruits_ttl <= 0: #TODO: Check it works (mask)
+        if self.fruits_ttl <= 0: 
             mask = self.board>2
             self.board[mask] = 0
-            #self.board = np.array([[0 if i not in [0, 1, 2, -1] else i for i in line] for line in self.board])
             
-
     ########## helper functions in class ##########
     def estimate_next_time(self,cu_time:float) -> float:
         return cu_time

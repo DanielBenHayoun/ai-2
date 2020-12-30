@@ -64,7 +64,7 @@ class Player(AbstractPlayer):
             - direction: tuple, specifing the Player's movement, chosen from self.directions
         """
         
-        d = 3
+        d = 2
         
         reach_the_end = False
         best_direction = None
