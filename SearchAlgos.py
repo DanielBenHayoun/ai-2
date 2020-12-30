@@ -84,6 +84,21 @@ class State:
             if available_steps[i] == 0:
                 available_steps[i] = 5
         return min(available_steps)
+    
+    def computeCoSimplePlayerSteps(self):
+        
+        location = self.get_location()
+        available_steps = [0, 0, 0, 0]
+        for index, wrap_dir in zip(range(4), self.directions):
+            (wrap_i, wrap_j) = (location[0] + wrap_dir[0], location[1] + wrap_dir[1])
+            if 0 <= wrap_i < len(self.board) and 0 <= wrap_j < len(self.board[0]) and (self.board[wrap_i][wrap_j] not in [-1, 1, 2]):
+                for direction in self.directions:
+                    (i, j) = (wrap_i + direction[0], wrap_j + direction[1])
+                    # check legal move
+                    if 0 <= i < len(self.board) and 0 <= j < len(self.board[0]) and (self.board[i][j] not in [-1, 1, 2]):
+                        available_steps[index] += 1
+        
+        return max(available_steps)
 
     def print_board_to_terminal(self,board=None):
         if not board:

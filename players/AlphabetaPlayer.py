@@ -185,6 +185,7 @@ def legal_move(board,i,j):
 
 def succ(state:State) -> State : 
     sp_move = state.computeSimplePlayerSteps()
+    nsp_move = state.computeCoSimplePlayerSteps()
 
     try:
         for d in state.directions:
@@ -247,14 +248,21 @@ def utility(state:State,maximizing_player):
     #######################[Goal]#########################
     is_current_player_stuck = is_stuck(state,state.player_type)
     other_player = RIVAL if state.player_type == PLAYER else PLAYER
-    is_other_player_stuck = is_stuck(state,other_player)
+    #is_other_player_stuck = is_stuck(state,other_player)
     # Check if stuck
     if is_current_player_stuck:
-        if is_other_player_stuck:
-            return 10000000 if state.players_score[state.player_type] > state.players_score[other_player] else -10000000
-        # Else, add penalty
-        state.players_score[state.player_type] -= state.penalty_score
-        return 10000000 if state.players_score[state.player_type] > state.players_score[other_player] else -10000000
+        # if is_other_player_stuck:
+        #     if state.player_type == PLAYER:
+        #         state.players_score[state.player_type] -= state.penalty_score
+        #     else:
+        #         state.players_score[state.player_type] += state.penalty_score
+        #     return state.players_score[state.player_type] - state.players_score[other_player] 
+        # # Else, add penalty
+        if state.player_type == PLAYER:
+            state.players_score[state.player_type] -= state.penalty_score
+        else:
+            state.players_score[state.player_type] += state.penalty_score
+        return state.players_score[state.player_type] - state.players_score[other_player] 
     ######################################################
     # Else
     best_move_score = -1

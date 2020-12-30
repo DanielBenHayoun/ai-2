@@ -29,7 +29,7 @@ class Player(AbstractPlayer):
        
         self.penalty_score = penalty_score
         self.minimax = MiniMax(utility, succ, None, goal=is_goal_state)
-        self.fruits_poses = None
+        
         self.fruits_on_board_dict = {}
         self.locations = [None, None, None]
 
@@ -103,9 +103,9 @@ class Player(AbstractPlayer):
             - pos: tuple, the new position of the rival.
         No output is expected
         """
-        self.board[self.locations[RIVAL]] = -1
+        self.board[self.locations[RIVAL][X]][self.locations[RIVAL][Y]] = -1
         self.locations[RIVAL] = pos
-        self.board[pos] = 2
+        self.board[pos[X]][pos[Y]] = 2
         #  Check for fruit:
         if pos in self.fruits_on_board_dict.keys():
             self.fruits_on_board_dict.pop(pos)
@@ -136,9 +136,9 @@ class Player(AbstractPlayer):
         return cu_time
 
     def set_player_location(self, best_direction):
-        self.board[self.locations[PLAYER]] = -1     
+        self.board[self.locations[PLAYER][X]][self.locations[PLAYER][Y]] = -1     
         best_new_location = (self.locations[PLAYER][X] + best_direction[X], self.locations[PLAYER][Y] + best_direction[Y])
-        self.board[best_new_location] = 1
+        self.board[best_new_location[X]][best_new_location[Y]] = 1
         self.locations[PLAYER] = best_new_location
         #  Check for fruit:
         if best_new_location in self.fruits_on_board_dict.keys():
@@ -246,18 +246,26 @@ def utility(state:State,maximizing_player):
     #######################[Goal]#########################
     is_current_player_stuck = is_stuck(state,state.player_type)
     other_player = RIVAL if state.player_type == PLAYER else PLAYER
-    is_other_player_stuck = is_stuck(state,other_player)
+    #is_other_player_stuck = is_stuck(state,other_player)
     # Check if stuck
     if is_current_player_stuck:
-        if is_other_player_stuck:
-            return 10000000 if state.players_score[state.player_type] > state.players_score[other_player] else -10000000
-        # Else, add penalty
-        state.players_score[state.player_type] -= state.penalty_score
-        return 10000000 if state.players_score[state.player_type] > state.players_score[other_player] else -10000000
+        # if is_other_player_stuck:
+        #     if state.player_type == PLAYER:
+        #         state.players_score[state.player_type] -= state.penalty_score
+        #     else:
+        #         state.players_score[state.player_type] += state.penalty_score
+        #     return state.players_score[state.player_type] - state.players_score[other_player] 
+        # # Else, add penalty
+        if state.player_type == PLAYER:
+            state.players_score[state.player_type] -= state.penalty_score
+        else:
+            state.players_score[state.player_type] += state.penalty_score
+        return state.players_score[state.player_type] - state.players_score[other_player] 
     ######################################################
     # Else
     best_move_score = -1
-    h1 = state.sp_points
+    h1 = state.sp_points#/10 #4 - state.available_steps(state.player_type) 
+    #h1 = 4 - state.available_steps(state.get_location())
     h2 = -1
     if state.fruits_ttl > 0 and len(state.fruits_dict) > 0:
         min_fruit_dist = float('inf')
@@ -270,7 +278,7 @@ def utility(state:State,maximizing_player):
                     min_fruit_dist = curr_fruit_dist
         max_dist = len(state.board)+len(state.board[0])
         h2 = (10.0/min_fruit_dist)+1 if min_fruit_dist < float('inf') else -1
-    w = 0.6 if h2 > 0 else 1
+    w = 0.7 if h2 > 0 else 1
     best_move_score = w*h1 + (1-w)*h2 
     best_move_score += state.players_score[state.player_type]
     # if h2>0 and state.player_type == PLAYER:
