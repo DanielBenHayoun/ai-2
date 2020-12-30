@@ -83,14 +83,13 @@ class Player(AbstractPlayer):
             try:
                 _, best_direction, reach_the_end,chosen_state = self.minimax.search(state,d,True,iter_time_limit)
                 d += 1
-                print(f'Minimax>>{d}')
+                
             except Exception as e:
-                print(f'MnMx:: {e}')
                 break
             
         # Set new location   
         if best_direction == None:
-            best_direction = self.get_random_move() # TODO: Dirty fix     
+            best_direction = self.get_random_move()    
         self.set_player_location(best_direction)
 
         self.turns += 1
@@ -149,7 +148,7 @@ class Player(AbstractPlayer):
             (i,j) = self.locations[PLAYER]
             if 0 <= i < len(self.board) and 0 <= j < len(self.board[0]) and self.board[i][j] not in [-1, 1, 2]:
                 return d
-        return (-1,-1)
+        raise Exception('No legal moves left')
     ########## helper functions for MiniMax algorithm ##########
 
 def get_neighbors(board,pos):
@@ -201,7 +200,7 @@ def succ(state:State) -> State :
                 if new_location in state.fruits_dict.keys():
                     child.players_score[child.player_type] += child.board[new_location]
                     child.fruits_dict.pop(new_location)
-                # TODO add penalty ?
+                
                 # Move the player
                 child.board[curr_location] = -1
                 child.board[new_location] = child.player_type
@@ -212,7 +211,7 @@ def succ(state:State) -> State :
                 yield child # Yield a new state that made the move
         
     except StopIteration:
-        print("SUCC error") #TODO: REMOVE
+        
         return None
 
 def is_stuck(state:State,player_type):
