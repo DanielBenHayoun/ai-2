@@ -78,11 +78,11 @@ class Player(AbstractPlayer):
             TIME_ESTIMATION = 0.9 
         else:
             TIME_ESTIMATION = 0.85
-        #print(f'Time limit: {time_limit}')
-        while not reach_the_end: # and d < len(state.board)*len(state.board[0]):
+
+        while not reach_the_end: 
             
             iter_time_limit = TIME_ESTIMATION * ( time_limit - (time.time() - start_time) )
-            #print(f'>>>Iter time: {iter_time_limit}')
+            
             state = State(get_directions(),self.board,self.locations,self.fruits_on_board_dict,PLAYER,players_score,self.penalty_score,self.fruits_ttl,self.turns)
 
             try:
@@ -129,10 +129,9 @@ class Player(AbstractPlayer):
             return
         self.fruits_ttl -= 1
         # Remove all fruits if their TTL expired
-        if self.fruits_ttl <= 0: #TODO: Check it works (mask)
+        if self.fruits_ttl <= 0: 
             mask = self.board>2
             self.board[mask] = 0
-            #self.board = np.array([[0 if i not in [0, 1, 2, -1] else i for i in line] for line in self.board])
             
             
 
@@ -229,13 +228,8 @@ def is_stuck(state:State,player_type):
         return True
 
 def is_goal_state(state:State):
-
     is_player_stuck = is_stuck(state, state.player_type)
     return is_player_stuck
-    # is_rival_stuck = is_stuck(state, RIVAL)
-    # if is_rival_stuck and state.player_type == PLAYER:
-    #     return False
-    # return is_player_stuck or is_rival_stuck
 
 def Manhattan(start, end):
     return abs(start[1] - end[1]) + abs(start[0] - end[0])

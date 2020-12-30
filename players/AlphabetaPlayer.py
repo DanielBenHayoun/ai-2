@@ -124,10 +124,9 @@ class Player(AbstractPlayer):
             return
         self.fruits_ttl -= 1
         # Remove all fruits if their TTL expired
-        if self.fruits_ttl <= 0: #TODO: Check it works (mask)
+        if self.fruits_ttl <= 0:
             mask = self.board>2
             self.board[mask] = 0
-            #self.board = np.array([[0 if i not in [0, 1, 2, -1] else i for i in line] for line in self.board])
             
             
 
