@@ -77,7 +77,7 @@ class Player(AbstractPlayer):
         while not reach_the_end: # and d < len(state.board)*len(state.board[0]):
             
             iter_time_limit = TIME_ESTIMATION * ( time_limit - (time.time() - start_time) )
-            state = State(get_directions(),self.board,self.locations,self.fruits_on_board_dict,PLAYER,players_score,self.penalty_score,self.fruits_ttl)
+            state = State(get_directions(),self.board,self.locations,self.fruits_on_board_dict,PLAYER,players_score,self.penalty_score,self.fruits_ttl,self.turns)
 
             try:
                 _, best_direction, reach_the_end,chosen_state = self.alphabeta.search(state,d,True,iter_time_limit,alpha=float('-inf'), beta=float('inf'))
@@ -153,39 +153,34 @@ class Player(AbstractPlayer):
 
     ########## helper functions for MiniMax algorithm ##########
 
+def get_neighbors(board,pos):
+    for d in get_directions():
+        i = pos[0] + d[0]
+        j = pos[1] + d[1]
+        if legal_move(board,i,j):
+            yield (i,j)
 
-def reachable_white_squares(board,pos) -> int:
-    #(i,j) = pos
-    initial_location = pos
+def reachables(board,pos) -> int:
+    node = pos
+    visited = []
+    queue = []
+    visited.append(node)
+    queue.append(node)
+    reachables = 0
+    while queue:
+        s = queue.pop(0) 
+        for neighbor in get_neighbors(board,s):
+            if neighbor not in visited:
+                reachables += 1
+                visited.append(neighbor)
+                queue.append(neighbor)
 
-    reachable_board = np.zeros((len(board), len(board[0])))
-    reachable_squares = list()
-    reachable_squares.append(initial_location)
-    start_index = 0
-    found_reachable = True
-
-    while found_reachable and start_index < len(reachable_squares):
-        player_location = reachable_squares[start_index]
-        found_reachable = False
-        for d in get_directions():
-            i = player_location[0] + d[0]
-            j = player_location[1] + d[1]
-            if legal_move(board,i,j):
-                new_location = (i, j)
-                if not reachable_board[i][j]:
-                    reachable_board[i][j] = 1
-                    reachable_squares.append(new_location)
-                    found_reachable = True
-        start_index += 1
-
-    return len(reachable_squares) - 1
+    return reachables
 
 def legal_move(board,i,j):
     return 0 <= i < len(board) and 0 <= j < len(board[0]) and (board[i][j] not in [-1, 1, 2])
 
 def succ(state:State) -> State : 
-    sp_move = state.computeSimplePlayerSteps()
-    nsp_move = state.computeCoSimplePlayerSteps()
 
     try:
         for d in state.directions:
@@ -194,13 +189,13 @@ def succ(state:State) -> State :
             # Check children states:
             if legal_move(state.board,i,j):
                 child = deepcopy(state)
-                child.change_player()
                 child.dir = d
                 
                 if state.player_type == PLAYER:
                     child.fruits_ttl -= 1
+                    child.turns += 1
                 # Determind locations
-                curr_location = child.locations[state.player_type] 
+                curr_location = child.locations[child.player_type] 
                 new_location = (curr_location[X] + d[X] , curr_location[Y] + d[Y])
                 # Mind the fruits
                 if new_location in state.fruits_dict.keys():
@@ -209,16 +204,15 @@ def succ(state:State) -> State :
                 # TODO add penalty ?
                 # Move the player
                 child.board[curr_location] = -1
-                child.board[new_location] = state.player_type
-                child.locations[state.player_type] = new_location
-                # Consider Simple Player move:
-                #child.change_player()
-                if child.player_type == PLAYER and child.available_steps(new_location) == sp_move:
-                    child.sp_points +=  ((4-sp_move)/10.0) + 1
+                child.board[new_location] = child.player_type
+                child.locations[child.player_type] = new_location
+                # Change the turn:
+                child.change_player()
                 
                 yield child # Yield a new state that made the move
         
     except StopIteration:
+        print("SUCC error") #TODO: REMOVE
         return None
 
 def is_stuck(state:State,player_type):
@@ -241,23 +235,25 @@ def is_goal_state(state:State):
 def Manhattan(start, end):
     return abs(start[1] - end[1]) + abs(start[0] - end[0])
 
+def availables(board,loc):
+    steps_available = 0
+    for d in get_directions():
+        i = loc[0] + d[0]
+        j = loc[1] + d[1]
+        if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
+            steps_available += 1
+    return steps_available
+
 def utility(state:State,maximizing_player):
     """
     utility and heuristic function
     """
+    best_move_score = -1
     #######################[Goal]#########################
     is_current_player_stuck = is_stuck(state,state.player_type)
     other_player = RIVAL if state.player_type == PLAYER else PLAYER
-    #is_other_player_stuck = is_stuck(state,other_player)
     # Check if stuck
     if is_current_player_stuck:
-        # if is_other_player_stuck:
-        #     if state.player_type == PLAYER:
-        #         state.players_score[state.player_type] -= state.penalty_score
-        #     else:
-        #         state.players_score[state.player_type] += state.penalty_score
-        #     return state.players_score[state.player_type] - state.players_score[other_player] 
-        # # Else, add penalty
         if state.player_type == PLAYER:
             state.players_score[state.player_type] -= state.penalty_score
         else:
@@ -265,9 +261,15 @@ def utility(state:State,maximizing_player):
         return state.players_score[state.player_type] - state.players_score[other_player] 
     ######################################################
     # Else
-    best_move_score = -1
-    h1 = state.sp_points#/10 #4 - state.available_steps(state.player_type) 
-    #h1 = 4 - state.available_steps(state.get_location())
+    #--------------------------------------------------
+    ################# Available Steps #################
+    #--------------------------------------------------
+    player_available_steps = availables(state.board, state.locations[PLAYER])
+    h1 = 4-player_available_steps
+    h4 = player_available_steps
+    #--------------------------------------------------
+    ################# Fruits Distance #################
+    #--------------------------------------------------
     h2 = -1
     if state.fruits_ttl > 0 and len(state.fruits_dict) > 0:
         min_fruit_dist = float('inf')
@@ -279,11 +281,23 @@ def utility(state:State,maximizing_player):
                 if curr_fruit_dist < other_player_fruit_dist:
                     min_fruit_dist = curr_fruit_dist
         max_dist = len(state.board)+len(state.board[0])
-        h2 = (10.0/min_fruit_dist)+1 if min_fruit_dist < float('inf') else -1
-    w = 0.7 if h2 > 0 else 1
-    best_move_score = w*h1 + (1-w)*h2 
+        h2 = (max_dist*10.0/min_fruit_dist)+1 if min_fruit_dist < float('inf') else -1
+    #--------------------------------------------------
+    ################# Reachable Squrs #################
+    #--------------------------------------------------
+    reachables_player = reachables(state.board,state.locations[PLAYER])
+    reachables_rival = reachables(state.board,state.locations[RIVAL])
+    h3 = reachables_player - reachables_rival # We want more for us
+    #--------------------------------------------------
+    ################# Combine it all. #################
+    #--------------------------------------------------
+    if not state.half_game():
+        w = 0.8 if h2 > 0 else 1
+        best_move_score = w*(h1-h3) + (1-w)*h2 
+    else:
+        w = 0.7 if h2 > 0 else 1
+        best_move_score = w*(h4+h3) + (1-w)*h2 
+
     best_move_score += state.players_score[state.player_type]
-    # if h2>0 and state.player_type == PLAYER:
-    #     print(f'{state.fruits_ttl}:| [h1: {h1}] | [h2: {h2}] | [score: {best_move_score}] | w is {w}')
     return best_move_score
 

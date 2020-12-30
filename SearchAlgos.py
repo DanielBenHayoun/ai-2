@@ -13,7 +13,7 @@ from typing import Callable
 ## A State class
 class State:
     
-    def __init__(self,directions,board,locations,fruits_dict,player_type,players_score,penalty_score,fruits_ttl):
+    def __init__(self,directions,board,locations,fruits_dict,player_type,players_score,penalty_score,fruits_ttl,turns):
         self.directions = deepcopy(directions)
         self.X=0
         self.Y=1
@@ -28,9 +28,12 @@ class State:
         self.players_score[1] = players_score[0]
         self.players_score[2] = players_score[1]
 
-        self.sp_points = 0 # Simple Player points
+        #self.sp_points = 0 # Simple Player points
 
-        
+        total_whites = len(np.where(board == 0)[0])
+        self.max_turns = total_whites // 2
+        self.turns = turns
+     
 
     def set_location(self,player_type,pos):
         self.locations[player_type] = pos
@@ -54,51 +57,15 @@ class State:
         return (self.locations[player_type][0] + d[0],self.locations[player_type][1] + d[1])
     
     def available_steps(self, location):
-            available_steps = 0
-            for direction in self.directions:
-                i, j = location[0]+direction[0],location[1]+direction[1]
-                if self.legal_move(int(i),int(j)):
-                    available_steps += 1
-            return available_steps
+        available_steps = 0
+        for direction in self.directions:
+            i, j = location[0]+direction[0],location[1]+direction[1]
+            if self.legal_move(int(i),int(j)):
+                available_steps += 1
+        return available_steps
 
-    def computeSimplePlayerSteps(self):
-        # min_available_steps = 10
-        # for direction in self.directions:
-        #     (i, j) = (self.locations[self.player_type][0] + direction[0], self.locations[self.player_type][1] + direction[1])
-        #     if self.legal_move(i,j):
-        #         curr_availables = self.available_steps((i,j))
-        #         min_available_steps = min(min_available_steps,curr_availables)
-        # return min_available_steps if min_available_steps < 10 else -1
-
-        location = self.get_location()
-        available_steps = [0, 0, 0, 0]
-        for index, wrap_dir in zip(range(4), self.directions):
-            (wrap_i, wrap_j) = (location[0] + wrap_dir[0], location[1] + wrap_dir[1])
-            if 0 <= wrap_i < len(self.board) and 0 <= wrap_j < len(self.board[0]) and (self.board[wrap_i][wrap_j] not in [-1, 1, 2]):
-                for direction in self.directions:
-                    (i, j) = (wrap_i + direction[0], wrap_j + direction[1])
-                    # check legal move
-                    if 0 <= i < len(self.board) and 0 <= j < len(self.board[0]) and (self.board[i][j] not in [-1, 1, 2]):
-                        available_steps[index] += 1
-        for i in range(4):
-            if available_steps[i] == 0:
-                available_steps[i] = 5
-        return min(available_steps)
-    
-    def computeCoSimplePlayerSteps(self):
-        
-        location = self.get_location()
-        available_steps = [0, 0, 0, 0]
-        for index, wrap_dir in zip(range(4), self.directions):
-            (wrap_i, wrap_j) = (location[0] + wrap_dir[0], location[1] + wrap_dir[1])
-            if 0 <= wrap_i < len(self.board) and 0 <= wrap_j < len(self.board[0]) and (self.board[wrap_i][wrap_j] not in [-1, 1, 2]):
-                for direction in self.directions:
-                    (i, j) = (wrap_i + direction[0], wrap_j + direction[1])
-                    # check legal move
-                    if 0 <= i < len(self.board) and 0 <= j < len(self.board[0]) and (self.board[i][j] not in [-1, 1, 2]):
-                        available_steps[index] += 1
-        
-        return max(available_steps)
+    def half_game(self):
+        return self.turns >= (self.max_turns // 2)
 
     def print_board_to_terminal(self,board=None):
         if not board:
